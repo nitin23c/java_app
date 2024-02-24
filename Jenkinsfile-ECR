@@ -93,7 +93,7 @@ pipeline {
             when { expression { params.action == 'create' } }
             steps{
                 script{
-                    ecrImagePush("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
+                    ecrImagePush("${params.aws_account_id}", "${params.region}", "${params.ecr_repo_name}")
                 }
             }
         }
@@ -101,7 +101,7 @@ pipeline {
         stage('ECR Image Cleanup'){
             when { expression { params.action == 'create' } }
             steps{
-                ecrImageCleanup("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
+                ecrImageCleanup("${params.aws_account_id}", "${params.region}", "${params.ecr_repo_name}")
             }
         }
 
