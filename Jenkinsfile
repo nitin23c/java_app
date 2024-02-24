@@ -1,3 +1,4 @@
+@Library('my-jenkins-library') _
 pipeline {
     agent any
 
@@ -5,7 +6,10 @@ pipeline {
         stage('Git Checkout'){
             steps{
                 script{
-                    git branch: 'main', credentialsId: 'github', url: 'git@github.com:nitin23c/java_app.git'
+                    gitCheckout(
+                    branch: "main",
+                    credentialsId: "github",
+                    url:"git@github.com:nitin23c/java_app.git")
             }
             }
         }
