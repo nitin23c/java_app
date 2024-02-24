@@ -80,7 +80,7 @@ pipeline {
             }
         }
 
-        stage('Docker Image Scan: Trivy'){
+        stage('ECR Image Scan: Trivy'){
             when { expression { params.action == 'create' } }
             steps{
                 script{
@@ -89,7 +89,7 @@ pipeline {
             }
         }
 
-        stage('Docker Image upload: Docker Hub'){
+        stage('ECR Image upload: ECR'){
             when { expression { params.action == 'create' } }
             steps{
                 script{
@@ -98,7 +98,7 @@ pipeline {
             }
         }
 
-        stage('Docker Image Cleanup'){
+        stage('ECR Image Cleanup'){
             when { expression { params.action == 'create' } }
             steps{
                 ecrImageCleanup("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
