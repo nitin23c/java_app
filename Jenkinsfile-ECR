@@ -1,0 +1,109 @@
+@Library('my-jenkins-library') _
+pipeline {
+    agent any
+
+    parameters{
+
+        choice(name: 'action', choices: 'create\ndestroy', description: 'Choose to either create or destroy')
+        string(name: 'aws_account_id', description: "name of the docker image", defaultValue: '730913881328')
+        string(name: 'region', description: "tag of the docker build", defaultValue: 'us-east-1')
+        string(name: 'ecr_repo_name', description: "name of the Application", defaultValue: 'nitin23c')
+        
+    }
+
+    stages{
+        stage('Git Checkout'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    gitCheckout(
+                    branch: "main",
+                    credentialsId: "github",
+                    url:"git@github.com:nitin23c/java_app.git")
+            }
+            }
+        }
+
+        stage('Unit Test Maven'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                     mvnTest()
+                }
+            }
+        }
+
+        stage('Integration Test Maven'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                     mvnIntegrationTest()
+                }
+            }
+        }
+
+        stage('Static code analysis: sonarqube'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    def SonarQubecredentialsId = 'sonarqube-api'
+                     staticCodeAnalysis(SonarQubecredentialsId)
+                }
+            }
+        }
+
+        stage('Quality Gate Status check : sonarqube'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    def SonarQubecredentialsId = 'sonarqube-api'
+                     qualityGateStatus(SonarQubecredentialsId)
+                }
+            }
+        }
+
+        stage('Maven Build : maven'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    mvnBuild()
+                }
+            }
+        }
+
+        stage('ECR Image Build'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    ecrBuild("${params.aws_account_id}", "${params.region}", "${params.ecr_repo_name}")
+                }
+            }
+        }
+
+        stage('Docker Image Scan: Trivy'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    ecrImageScan("${params.aws_account_id}", "${params.region}", "${params.ecr_repo_name}")
+                }
+            }
+        }
+
+        stage('Docker Image upload: Docker Hub'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    ecrImagePush("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
+                }
+            }
+        }
+
+        stage('Docker Image Cleanup'){
+            when { expression { params.action == 'create' } }
+            steps{
+                ecrImageCleanup("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
+            }
+        }
+
+    }
+}
