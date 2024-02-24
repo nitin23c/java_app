@@ -87,5 +87,14 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker Image upload: Docker Hub'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    dockerImagePush("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
+                }
+            }
+        }
     }
 }
