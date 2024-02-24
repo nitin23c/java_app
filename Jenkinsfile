@@ -23,7 +23,7 @@ pipeline {
         stage('Integration Test Maven'){
             steps{
                 script{
-                     sh 'mvn clean compile'
+                     mvnIntegrationTest()
                 }
             }
         }
