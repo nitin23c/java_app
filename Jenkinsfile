@@ -16,6 +16,13 @@ pipeline {
         stage('Unit Test Maven'){
             steps{
                 script{
+                     mvnTest()
+                }
+            }
+        }
+        stage('Integration Test Maven'){
+            steps{
+                script{
                      sh 'mvn clean compile'
                 }
             }
