@@ -6,7 +6,7 @@ pipeline {
 
         choice(name: 'action', choices: 'create\ndestroy', description: 'Choose to either create or destroy')
         string(name: 'imageName', description: "name of the docker image", defaultValue: 'java-app')
-        string(name: 'ImageTag', description: "tag of the docker build", defaultValue: 'v1')
+        string(name: 'imageTag', description: "tag of the docker build", defaultValue: 'v1')
         string(name: 'dockerHubUser', description: "name of the Application", defaultValue: 'nitin23c')
     }
 
@@ -75,6 +75,15 @@ pipeline {
             steps{
                 script{
                     dockerBuild("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
+                }
+            }
+        }
+
+        stage('Docker Image Scan: Trivy'){
+            when { expression { params.action == 'create' } }
+            steps{
+                script{
+                    dockerImageScan("${params.imageName}", "${params.imageTag}", "${params.dockerHubUser}")
                 }
             }
         }
